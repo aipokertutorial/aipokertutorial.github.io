@@ -19,26 +19,35 @@ TODO:
 -->
 
 # CFR - The CFR Algorithm 
-The Counterfactual Regret Minimization (CFR) algorithm was first published in a 2007 paper from the University of Alberta by Martin Zinkevich et al. called "[Regret Minimization in Games with Incomplete Information](https://poker.cs.ualberta.ca/publications/NIPS07-cfr.pdf)". Counterfactual means "relating to or expressing what has not happened or is not the case".
+The Counterfactual Regret Minimization (CFR) algorithm was first published in a 2007 paper from the University of Alberta by Martin Zinkevich et al. called "[Regret Minimization in Games with Incomplete Information](https://poker.cs.ualberta.ca/publications/NIPS07-cfr.pdf)". 
+
+Counterfactual means "relating to or expressing what has not happened or is not the case". For example, if in reality I didn't bring an umbrella and got wet in the rain, I could say counterfactually, "If I had brought an umbrella, I wouldn't have gotten wet."
+
+Regret we previously touched on in the [Game Theory Foundation](https://aipokertutorial.com/game-theory-foundation/) section. In brief, it's a way to assign a value to the difference between a made decision and an optimal decision. For example, if you choose to play a slot machine that returns a value of 5 rather than a machine that returns a value of 10, then your regret would be 10-5 = 5. 
+
+Minimization refers to minimizing the difference between the made decision and the optimal decision. Playing the slot machine that returns a value of 10 (i.e. the optimal machine) would minimize the regret to 0. Of course this is a very simple example and things aren't usually that easy. 
 
 ## TLDR Explanation
-CFR is a self play algorithm that learns by playing against itself repeatedly. It starts play with a uniform random strategy (each action at each decision point is equally likely) and iterates on these strategies to nudge closer to the game theory optimal Nash equilibrium strategy as the self play continues. The Nash equilibrium strategy is a "defensive" strategy that can't be beaten, but also doesn't take advantage of opponents. The counterfactual part comes from computing values based on assuming that our opponent plays to certain game states.
+CFR is a self play algorithm that learns by playing against itself repeatedly. It starts play with a uniform random strategy (each action at each decision point is equally likely) and iterates on these strategies to nudge closer to the game theory optimal Nash equilibrium strategy as the self play continues (the average of all strategies converges to the equilibrium strategy). The Nash equilibrium strategy is a fixed "defensive" strategy that can't be beaten, but also doesn't take advantage of opponents. 
 
 ![Kuhn Poker Tree from Alberta](../assets/section4/cfr/infoset2.png "Kuhn Poker Tree from Alberta")
 
-At each information set in the game tree, the algorithm keeps a counter of regret values for each possible action. The regret means how much better the agent would have done if it had always played that action rather than the actual strategy that could be a mixture of actions. Positive regret means we should have taken that action more and negative regret means we would have done better by not taking that action. 
+The counterfactual part comes from computing values of actions from a game state based on assuming counterfactually that we play to that game state with probability 1. Therefore only the opponent and chance probabilities to get to this game state are factored into the equation. 
 
-The values computed with the regret are called counterfactual values, which are the value of playing an action at a certain game state weighted by the probability (counterfactual assumption) of the other agent playing to that game state. 
+The values are called counterfactual values and are computed by multiplying the probability of the opponent and chance playing to a certain state by the probability of playing from that point to the end of the game tree and the value at the end of the game tree.
+
+At each information set in the game tree, the algorithm keeps a counter of regret values for each possible action. The regret means how much better the agent would have done if it had always played that action rather than the average strategy over the mixture of all possible actions. Positive regret means we should have taken that action more and negative regret means we would have done better by not taking that action. 
 
 For example, if the agent was playing a game in which it had 5 action options at a certain game state and Action 1 had a value of 3 while the game state average over all 5 actions was 1, then the regret would be 3-1 = 2. This means that Action 1 was better than average and we should favor taking that action more. 
 
-The CFR algorithm updates the strategy after each iteration to play in proportion to the regrets, meaning that if an action did well in the past, the agent would be more likely to play it in the future. 
+The regret is minimized by playing more of the better actions, thus bringing up the average game state value. 
+
+The CFR algorithm updates the strategy after each iteration to play in proportion to the regrets, meaning that if an action did well in the past, the agent would be more likely to play it in the future. Note that playing proportionally means we don't change the strategy too drastically, which could be predictable and exploitable. This also means that strategies that do poorly have a chance to "recover" and be played again. 
 
 The final Nash equilibrium strategy is the average strategy over each iteration. This strategy cannot lose in expectation and is considered optimal since it's theoretically robust and neither player would have incentive to change strategies if both playing an equilibrium. This is what we mean when we say "solve" a poker game. 
 
 ## Detailed Intuitive Explanation
 Michael Johanson, one of the authors on the original paper, gave his intuitive explanation of CFR in a [post on Quora](https://www.quora.com/What-is-an-intuitive-explanation-of-counterfactual-regret-minimization). 
-
 
 ## The Algorithm
 Due to the constraints of solving imperfect information games with MCTS and the memory limits of solving games with linear programs, CFR was developed as a novel solution. CFR also benefits from being computationally cheap and doesn’t require parameter tuning. It is an iterative Nash equilibrium approximation method that works through the process of repeated self-play between two regret minimizing agents.
