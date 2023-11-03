@@ -46,8 +46,30 @@ The CFR algorithm updates the strategy after each iteration to play in proportio
 
 The final Nash equilibrium strategy is the average strategy over each iteration. This strategy cannot lose in expectation and is considered optimal since it's theoretically robust and neither player would have incentive to change strategies if both playing an equilibrium. This is what we mean when we say "solve" a poker game. 
 
-## Detailed Intuitive Explanation
+### Detailed Intuitive Explanation
 Michael Johanson, one of the authors on the original paper, gave his intuitive explanation of CFR in a [post on Quora](https://www.quora.com/What-is-an-intuitive-explanation-of-counterfactual-regret-minimization). 
+
+## Simplified Counterfactual Value and Regret Computations
+![Simplified Game Tree](../assets/section4/cfr/simplified.png "Simplified Game Tree")
+
+Here we show a very simple game tree showing a Player 1 node at the end of the game. For simplicity, we assume that this is the first iteration of the algorithm so each action is assigned a uniform $$ 1/3 $$ probability. $$ \sigma_(-i) = 0.38 $$ is assigned as the probability of chance and Player 2 to play to this node. Player 1's probability is counterfactually assumed to be $$ 1 $$. 
+
+**Regular expected value:**
+We can compute the regular expected value for each action of P1: 
+$$ \text{EV(action)} = P(\text{play from current node to endpoint}) * U(\text{endpoint}) $$
+
+$$ \text{EV(action)} = \pi^\sigma(h,z) * u_i(z) $$
+
+$$ EV(a) = 0.33*(4) = 1.33 $$
+$$ EV(b) = 0.33*(7) = 2.33 $$
+$$ EV(c) = 0.33*(-10) = -3.33 $$
+
+**Counterfactual value:** 
+The counterfactual value includes the reach probability $$ \sigma_(-i) = 0.38 $$ of the opponent and chance playing to this node. 
+
+$$ CV()
+$$ v_i(I,a) = \pi^\sigma_{-i}(h)\pi^{\sigma:I\rightarrow a}(h,z)u_i(z) $$
+$$ v
 
 ## The Algorithm
 Due to the constraints of solving imperfect information games with MCTS and the memory limits of solving games with linear programs, CFR was developed as a novel solution. CFR also benefits from being computationally cheap and doesn’t require parameter tuning. It is an iterative Nash equilibrium approximation method that works through the process of repeated self-play between two regret minimizing agents.
